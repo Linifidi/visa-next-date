@@ -4,20 +4,21 @@
 var meuEmail = 'tenhofome03@gmail.com';
 var meuSenha = 'tenhofome12';
 
-    // Informe o número do processo, é o número que aparece na sua URL quando você logo no site ( geralmente após "/schedule/",  nunca após "/groups" )
+    // Informe o número do processo, é o número que aparece na sua URL após "/schedule/"
 var numero_processo = 39962141;
 
+
     // Você já fez o pagamento da taxa? 1 sim, 2 não (página de agendamento só é liberada após pagamento e marcação).
-var url_agenda_livre = 2;
+var url_agenda_livre = 1;
 
     // infome a data interessante limite (maior data que receberá alertas).
-var diaMarcado = 24;
-var mesMarcado = 5;
-var anoMarcado = 2024;
+var diaMarcado = 17;
+var mesMarcado = 8;
+var anoMarcado = 2022;
 
     // Informe de quanto em quanto tempo o bot recarregará a página.
        // Valores muito baixos podem causar 429 (TOO MANY REQUEST). (delay recomendado: 61s.)
-var delay = 5; // Em segundos.
+var delay = 31; // Em segundos.
 
     // Informe uma data inválida para ser ignorada
 var diaBloqueado = 1;
@@ -25,8 +26,9 @@ var mesBloqueado = 6;
 var anoBloqueado = 2025;
 
     // escolha a cidade à ser observada.
-var cidade= 0;
-var cidades = ['brasília','Rio de Janeiro','São Paulo','Recife','Porto Alegre'] // NÃO ALTERE
+var cidade= 2;
+var cidades = ['Brasília','Rio de Janeiro','São Paulo','Recife','Porto Alegre'] // NÃO ALTERE
+var num_cidades = [0,1,2,3,4] // NÃO ALTERE
 
         // Brasília =       [0]
         // Rio de Janeiro = [1]
@@ -51,6 +53,7 @@ Notification.requestPermission(/* opcional: callback */);
 setInterval(async() => {
 
     if( reload == 1){
+		await sleep(5000);
         await window.location.reload();
     }
 
@@ -82,166 +85,28 @@ setInterval(async() => {
     }
 
     else if(url_atual == url_agenda){
-
-        console.log("Estamos na página de Agendamento")
-        console.log("cidade de:", cidade)
-
-            if(cidade == 1){
-                console.log("cidade de 1")
-                document.querySelector('#appointments_consulate_appointment_facility_id').value = 55;
-            }
-            if(cidade == 2){
-                console.log("cidade de 2")
-                document.querySelector('#appointments_consulate_appointment_facility_id').value = 56;
-            }
-            if(cidade == 3){
-                console.log("cidade de 3")
-                document.querySelector('#appointments_consulate_appointment_facility_id').value = 57;
-            }
-            if(cidade == 4){
-                console.log("cidade de 4")
-                document.querySelector('#appointments_consulate_appointment_facility_id').value = 128;
-            }
-        
-            await sleep(1000);
-            console.log("cidade dev: ", document.querySelector('#appointments_consulate_appointment_facility_id').value)
-
-        
-        var calendario = document.querySelector('#appointments_consulate_appointment_date');
-        calendario.click();
-
-        var carregarMais = document.getElementsByClassName('ui-datepicker-next');
-
-        var i = 0;
-        var proximoDia = 'null' ;
-        var proximoMes ;
-        var proximoAno ;
-
-        while(proximoDia == 'null' && i <= 30 ){
-            // console.log("primeiro while")
-            try {
-                proximoDia = document.querySelector('tbody tr td a').innerText;
-                // console.log("primeiro try, proximoDia: ", proximoDia)
-            } catch(error){
-                carregarMais[0].click();
-                // console.log("primeiro catch")
-            }
-            console.log("i: ", i)
-            i++;
-            if(i == 30){console.log("primeiro while entrou em LOOP!!!")}
-        }
-
-        try {
-            proximoDia = document.querySelectorAll('tbody tr td a')[0].innerText;
-            proximoMes = document.querySelectorAll('tbody tr td a')[0].parentNode.attributes[3].value;
-            proximoMes ++;
-            proximoAno = document.querySelectorAll('tbody tr td a')[0].parentNode.attributes[4].value;
-
-        } catch (error) {
-            console.log("deu erro dentro da função depois While(proximoDia === null)")
-        }
-
-        console.log("proxima dia liberado:", proximoDia);
-        console.log("proxima mes liberado:", proximoMes);
-        console.log("proxima ano liberado:", proximoAno);
-
-
-        var compara = comparaDataCalendario(proximoDia, proximoMes, proximoAno);
-        console.log("compara: ", compara)
-        if(compara == '1'){
-            console.log("data interessante")
-            new Notification(("data disponível em "+ cidades[cidade] + ": "+ proximoDia + "/" + proximoMes + "/" + proximoAno), {
-                body: ("essa é a proxima data definida em " + cidades[cidade] + ": " + proximoDia + "/" + proximoMes + "/" + proximoAno)
-            });
-
-        }else if(compara == '2'){ // SIGNIFICA Q A PRIMEIRA DATA É BLOQUEADA
-            // console.log("entrou na compara 2")
-            console.log("data entrando na compara 2: ", document.querySelectorAll('tbody tr td a')[1].innerText )
-
-            try { // SE HOUVER UM SEGUNDO VALOR BOM EM SEQUENCIA DISPARA:
-                proximoDia = document.querySelectorAll('tbody tr td a')[1];
-                proximoDia = document.querySelectorAll('tbody tr td a')[1].innerText;
-                proximoMes = document.querySelectorAll('tbody tr td a')[1].parentNode.attributes[3].value;
-                proximoMes ++;
-                proximoAno = document.querySelectorAll('tbody tr td a')[1].parentNode.attributes[4].value;
-
-                var compara = comparaDataCalendario(proximoDia, proximoMes, proximoAno);
-                if(compara == '1'){
-                    console.log("data interessante")
-                    new Notification(("data disponível em "+ cidades[cidade] + ": " + proximoDia + "/" + proximoMes + "/" + proximoAno), {
-                        body: ("essa é a proxima data definida em Brasília." + "" + proximoDia + "/" + proximoMes + "/" + proximoAno)
-                    });
-                }
-
-                
-            } catch (error) { // SE NAO HOUVER UM SEGUNDO VALOR BOM EM SEQUENCIA DISPARA:
-
-                // console.log("entrou na compara 2 e no if")
-
-                console.log("data não interessante")
-                carregarMais[0].click();
-                carregarMais[0].click();
-
-                proximoDia= 'null';
-                i = 0; 
-    
-                while(proximoDia == 'null' && i <= 30){
-                    console.log('proximo dia: ', proximoDia)
-    
-                    try {
-                        proximoDia = document.querySelectorAll('tbody tr td a')[0].innerText;
-                        console.log('proximo dia try: ', proximoDia)
-                    } catch(error){
-                        carregarMais[0].click();
-                        console.log('skipando: ', proximoDia)
-                    }
-
-                    console.log('proximo dia2: ', proximoDia)
-
-                    i++;
-                    if(i == 30){console.log("Segundo while entrou em LOOP!!!")}
-                }
-        
-                try {
-                    proximoDia = document.querySelectorAll('tbody tr td a')[0];
-                    proximoDia = document.querySelectorAll('tbody tr td a')[0].innerText;
-                    proximoMes = document.querySelectorAll('tbody tr td a')[0].parentNode.attributes[3].value ;
-                    proximoMes ++;
-                    proximoAno = document.querySelectorAll('tbody tr td a')[0].parentNode.attributes[4].value;
-        
-                } catch (error) {
-                    console.log("deu erro dentro da função depois While(proximoDia === null)")
-                }
-    
-                var compara = comparaDataCalendario(proximoDia, proximoMes, proximoAno);
-                if(compara == '1'){
-                    console.log("data interessante")
-                    new Notification(("data disponível em "+ cidades[cidade] + ": " + proximoDia + "/" + proximoMes + "/" + proximoAno), {
-                        body: ("essa é a proxima data definida em " + cidades[cidade] + ": " + proximoDia + "/" + proximoMes + "/" + proximoAno)
-                    });
-                }
-            }
-        }
+		for (num_cidade of num_cidades) {
+			await tentaAgendar(num_cidade);
+		}
     }
 
     else if(url_atual == url_login){
 
             console.log("Estamos na página de login")
 
-            // modulo para gravar dados na localstorage
-                // if(window.localStorage.getItem('email') == null || window.localStorage.getItem('password') == null) {
-                //     let email = prompt('Digite seu email: ');
-                //     window.localStorage.setItem('email', email);
+            if(window.localStorage.getItem('email') == null || window.localStorage.getItem('password') == null) {
+                let email = prompt('Digite seu email: ');
+                window.localStorage.setItem('email', email);
 
-                //     let password = prompt('Digite sua senha: ');
-                //     window.localStorage.setItem('password', password);
-                // }
+                let password = prompt('Digite sua senha: ');
+                window.localStorage.setItem('password', password);
+            }
 
-                // console.log('Email Salvo: ' + localStorage.getItem('email'));
-                // console.log('Senha Salva: ' + localStorage.getItem('password'));
+            // console.log('Email Salvo: ' + localStorage.getItem('email'));
+            // console.log('Senha Salva: ' + localStorage.getItem('password'));
 
-            document.getElementById('user_email').value = meuEmail;
-            document.getElementById('user_password').value = meuSenha;
+            document.getElementById('user_email').value = localStorage.getItem('email');
+            document.getElementById('user_password').value = localStorage.getItem('password');
 
             let setID = document.getElementById('policy_confirmed');
             setID.checked = true;
@@ -270,6 +135,160 @@ setInterval(async() => {
 
 }, (delay*1000));
 
+function tentaAgendar(item){
+        console.log("Estamos na página de Agendamento")
+        console.log("cidade:", cidades[item])
+
+//            if(item == 0){
+//                console.log("cidade 0")
+//                document.querySelector('#appointments_consulate_appointment_facility_id').value = 54;
+//            }
+            if(item == 1){
+                console.log("cidade 1")
+                document.querySelector('#appointments_consulate_appointment_facility_id').value = 55;
+            }
+            if(item == 2){
+                console.log("cidade 2")
+                document.querySelector('#appointments_consulate_appointment_facility_id').value = 56;
+            }
+            if(item == 3){
+                console.log("cidade 3")
+                document.querySelector('#appointments_consulate_appointment_facility_id').value = 57;
+            }
+            if(item == 4){
+                console.log("cidade 4")
+                document.querySelector('#appointments_consulate_appointment_facility_id').value = 128;
+            }
+        
+            sleep(1000);
+            console.log("cidade dev: ", document.querySelector('#appointments_consulate_appointment_facility_id').value)
+
+        
+        var calendario = document.querySelector('#appointments_consulate_appointment_date');
+        calendario.click();
+
+        var carregarMais = document.getElementsByClassName('ui-datepicker-next');
+
+        var i = 0;
+        var proximoDia = 'null' ;
+        var proximoMes ;
+        var proximoAno ;
+
+        while(proximoDia == 'null' && i <= 30 ){
+            // console.log("primeiro while")
+            try {
+                proximoDia = document.querySelector('tbody tr td a').innerText;
+                // console.log("primeiro try, proximoDia: ", proximoDia)
+            } catch(error){
+				if(carregarMais.length > 0){
+					carregarMais[0].click();
+					// console.log("primeiro catch")
+				}
+            }
+            console.log("i: ", i)
+            i++;
+            if(i == 30){console.log("primeiro while entrou em LOOP!!!")}
+        }
+		ExistemDatas='1';
+        try {
+            proximoDia = document.querySelectorAll('tbody tr td a')[0].innerText;
+            proximoMes = document.querySelectorAll('tbody tr td a')[0].parentNode.attributes[3].value;
+            proximoMes ++;
+            proximoAno = document.querySelectorAll('tbody tr td a')[0].parentNode.attributes[4].value;
+
+        } catch (error) {
+            console.log("deu erro dentro da função depois While(proximoDia === null)");
+			ExistemDatas='0';
+        }
+
+        console.log("proxima dia liberado:", proximoDia);
+        console.log("proxima mes liberado:", proximoMes);
+        console.log("proxima ano liberado:", proximoAno);
+
+		if (ExistemDatas == '0'){
+			console.log("Não existem dias liberados!!!");
+		}else{
+			var compara = comparaDataCalendario(proximoDia, proximoMes, proximoAno);
+			console.log("compara: ", compara)
+			if(compara == '1'){
+				console.log("data interessante")
+				new Notification(("data disponível em "+ cidades[item] + ": "+ proximoDia + "/" + proximoMes + "/" + proximoAno), {
+					body: ("essa é a proxima data definida em " + cidades[item] + ": " + proximoDia + "/" + proximoMes + "/" + proximoAno)
+				});
+				reload = 0;
+			}else if(compara == '2'){ // SIGNIFICA Q A PRIMEIRA DATA É BLOQUEADA
+				// console.log("entrou na compara 2")
+				console.log("data entrando na compara 2: ", document.querySelectorAll('tbody tr td a')[1].innerText )
+
+				try { // SE HOUVER UM SEGUNDO VALOR BOM EM SEQUENCIA DISPARA:
+					proximoDia = document.querySelectorAll('tbody tr td a')[1];
+					proximoDia = document.querySelectorAll('tbody tr td a')[1].innerText;
+					proximoMes = document.querySelectorAll('tbody tr td a')[1].parentNode.attributes[3].value;
+					proximoMes ++;
+					proximoAno = document.querySelectorAll('tbody tr td a')[1].parentNode.attributes[4].value;
+
+					var compara = comparaDataCalendario(proximoDia, proximoMes, proximoAno);
+					if(compara == '1'){
+						console.log("data interessante")
+						new Notification(("data disponível em "+ cidades[item] + ": " + proximoDia + "/" + proximoMes + "/" + proximoAno), {
+							body: ("essa é a proxima data definida em Brasília." + "" + proximoDia + "/" + proximoMes + "/" + proximoAno)
+						});
+						reload = 0;
+					}
+
+					
+				} catch (error) { // SE NAO HOUVER UM SEGUNDO VALOR BOM EM SEQUENCIA DISPARA:
+
+					// console.log("entrou na compara 2 e no if")
+
+					if(carregarMais.length > 0){
+						console.log("data não interessante")
+						carregarMais[0].click();
+						carregarMais[0].click();
+
+						proximoDia= 'null';
+						i = 0; 
+			
+						while(proximoDia == 'null' && i <= 30){
+							console.log('proximo dia: ', proximoDia)
+			
+							try {
+								proximoDia = document.querySelectorAll('tbody tr td a')[0].innerText;
+								console.log('proximo dia try: ', proximoDia)
+							} catch(error){
+								carregarMais[0].click();
+								console.log('skipando: ', proximoDia)
+							}
+
+							console.log('proximo dia2: ', proximoDia)
+
+							i++;
+							if(i == 30){console.log("Segundo while entrou em LOOP!!!")}
+						}
+				
+						try {
+							proximoDia = document.querySelectorAll('tbody tr td a')[0];
+							proximoDia = document.querySelectorAll('tbody tr td a')[0].innerText;
+							proximoMes = document.querySelectorAll('tbody tr td a')[0].parentNode.attributes[3].value ;
+							proximoMes ++;
+							proximoAno = document.querySelectorAll('tbody tr td a')[0].parentNode.attributes[4].value;
+				
+						} catch (error) {
+							console.log("deu erro dentro da função depois While(proximoDia === null)")
+						}
+			
+						var compara = comparaDataCalendario(proximoDia, proximoMes, proximoAno);
+						if(compara == '1'){
+							console.log("data interessante")
+							new Notification(("data disponível em "+ cidades[item] + ": " + proximoDia + "/" + proximoMes + "/" + proximoAno), {
+								body: ("essa é a proxima data definida em " + cidades[item] + ": " + proximoDia + "/" + proximoMes + "/" + proximoAno)
+							});
+						}
+					}
+				}
+			}
+		}
+}
 
 function lerDataPortugues(data) {
     var dia = data[0]+data[1];
@@ -313,7 +332,6 @@ function lerDataPortugues(data) {
 
     return [dia, mes, ano]
 }
-
 
 function comparaDataPortugues(data){
     // return 0 para data ruim
